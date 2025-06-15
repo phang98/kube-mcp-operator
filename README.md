@@ -78,11 +78,12 @@ pytest --cov=sidecar --cov=mcp_operator --cov-report=term --cov-fail-under=80
 ## CI Artifacts
 
 The GitHub Actions workflow builds the sidecar Docker image and packages the
-Helm chart on each push. When changes land on `main`, a release is created that
-attaches:
+Helm chart on each push. When changes land on `main`, a release is created using
+**python-semantic-release** which automatically bumps the version, updates the
+changelog and attaches:
 
 - `mcp-sidecar.tar` – the Docker image saved as a tarball
 - `mcp-operator-<version>.tgz` – the packaged Helm chart
 
-Version changes are tracked in [CHANGELOG.md](CHANGELOG.md). New releases are
-automatically tagged using semantic versioning when changes merge to `main`.
+Version history lives in [CHANGELOG.md](CHANGELOG.md) and is maintained by
+`python-semantic-release`.

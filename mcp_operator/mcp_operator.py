@@ -27,6 +27,26 @@ def deployment_created(body, spec, meta, **kwargs):
     except kubernetes.client.exceptions.ApiException as e:
         if e.status != 404:
             raise
+    # Inject the sidecar container when it is not already present
+    containers = (
+        spec.get("template", {}).get("spec", {}).get("containers", [])
+    )
+    if not any(c.get("name") == "mcp-sidecar" for c in containers):
+        sidecar = {
+            "name": "mcp-sidecar",
+            "image": "mcp-sidecar:latest",
+            "ports": [{"containerPort": SIDE_CAR_PORT}],
+        }
+        patch = {
+            "spec": {
+                "template": {
+                    "spec": {
+                        "containers": containers + [sidecar]
+                    }
+                }
+            }
+        }
+        apps.patch_namespaced_deployment(name, namespace, patch)
     svc = kubernetes.client.V1Service(
         metadata=kubernetes.client.V1ObjectMeta(name=service_name, labels=labels),
         spec=kubernetes.client.V1ServiceSpec(

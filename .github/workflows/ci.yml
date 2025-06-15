@@ -75,3 +75,11 @@ jobs:
           gh release upload "v${version}" mcp-sidecar.tar mcp-operator-*.tgz SECURITY.md --repo "$GITHUB_REPOSITORY" --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Commit security report
+        if: steps.semrel.outputs.released == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add SECURITY.md
+          git commit -m "chore(security): update scan results" || echo "No changes to commit"
+          git push

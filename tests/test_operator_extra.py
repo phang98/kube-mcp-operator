@@ -67,8 +67,14 @@ class DummyCoreV1Api:
         self.created = svc.metadata.name
 
 class DummyAppsV1Api:
+    def __init__(self):
+        self.patched = None
+
     def list_namespaced_deployment(self, namespace, label_selector=None):
         return types.SimpleNamespace(items=[])
+
+    def patch_namespaced_deployment(self, name, namespace, body):
+        self.patched = (name, namespace, body)
 
 kubernetes.client.CoreV1Api = DummyCoreV1Api
 kubernetes.client.AppsV1Api = DummyAppsV1Api
@@ -84,9 +90,12 @@ def test_service_already_exists():
         labels={'app': 'demo'}
     )
     op.api.created = None
-    op.deployment_created(body={}, spec={}, meta=meta)
+    spec = {'template': {'spec': {'containers': [{'name': 'main'}]}}}
+    op.apps.patched = None
+    op.deployment_created(body={}, spec=spec, meta=meta)
     # Since the service exists, no new service should be created
     assert op.api.created is None
+    assert op.apps.patched is None
 
 
 def test_error_propagates():
@@ -100,4 +109,4 @@ def test_error_propagates():
         labels={}
     )
     with pytest.raises(kubernetes.client.exceptions.ApiException):
-        op.deployment_created(body={}, spec={}, meta=meta)
+        op.deployment_created(body={}, spec={'template': {'spec': {'containers': [{'name': 'main'}]}}}, meta=meta)

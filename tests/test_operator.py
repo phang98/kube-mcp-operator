@@ -70,8 +70,14 @@ class DummyCoreV1Api:
         self.created = svc.metadata.name
 
 class DummyAppsV1Api:
+    def __init__(self):
+        self.patched = None
+
     def list_namespaced_deployment(self, namespace, label_selector=None):
         return types.SimpleNamespace(items=[])
+
+    def patch_namespaced_deployment(self, name, namespace, body):
+        self.patched = (name, namespace, body)
 
 kubernetes.client.CoreV1Api = DummyCoreV1Api
 kubernetes.client.AppsV1Api = DummyAppsV1Api
@@ -79,24 +85,46 @@ kubernetes.client.AppsV1Api = DummyAppsV1Api
 op = importlib.import_module('mcp_operator.mcp_operator')
 
 def test_deployment_created():
-    meta = types.SimpleNamespace(annotations={'mcp-server': 'true'}, name='demo', namespace='default', labels={'app': 'demo'})
-    op.deployment_created(body={}, spec={}, meta=meta)
+    meta = types.SimpleNamespace(
+        annotations={'mcp-server': 'true'},
+        name='demo',
+        namespace='default',
+        labels={'app': 'demo'}
+    )
+    spec = {
+        'template': {
+            'spec': {
+                'containers': [{'name': 'main'}]
+            }
+        }
+    }
+    op.deployment_created(body={}, spec=spec, meta=meta)
     assert op.api.created == 'demo-mcp'
+    assert op.apps.patched[0] == 'demo'
+    patched_containers = op.apps.patched[2]['spec']['template']['spec']['containers']
+    assert any(c.get('name') == 'mcp-sidecar' for c in patched_containers)
 
 def test_deployment_created_skip():
     meta = types.SimpleNamespace(annotations={'mcp-server': 'false'}, name='demo', namespace='default', labels={'app': 'demo'})
     op.api.created = None
-    op.deployment_created(body={}, spec={}, meta=meta)
+    spec = {'template': {'spec': {'containers': [{'name': 'main'}]}}}
+    op.apps.patched = None
+    op.deployment_created(body={}, spec=spec, meta=meta)
     assert op.api.created is None
+    assert op.apps.patched is None
 
 def test_mcpconfig_created():
     deploy_meta = types.SimpleNamespace(annotations={'mcp-server': 'true'}, name='demo', namespace='default', labels={'app': 'demo'})
     deployment = types.SimpleNamespace(
         metadata=deploy_meta,
-        spec=types.SimpleNamespace(to_dict=lambda: {}),
+        spec=types.SimpleNamespace(to_dict=lambda: {
+            'template': {'spec': {'containers': [{'name': 'main'}]}}
+        }),
         to_dict=lambda: {}
     )
     op.apps.list_namespaced_deployment = lambda namespace, label_selector=None: types.SimpleNamespace(items=[deployment])
     op.api.created = None
+    op.apps.patched = None
     op.mcpconfig_created(body={}, spec={'selector': {'app': 'demo'}}, meta={'namespace': 'default'})
     assert op.api.created == 'demo-mcp'
+    assert op.apps.patched[0] == 'demo'

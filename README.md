@@ -5,7 +5,7 @@ This repository provides a minimal implementation of a Kubernetes operator and s
 ## Components
 
 - **Sidecar** - Lightweight FastAPI application that proxies requests to the main container and exposes its OpenAPI specification from a configurable path.
-- **Operator** - A Kopf based operator watching for deployments annotated with `mcp-server: "true"` and creating a service for the sidecar.
+- **Operator** - A Kopf based operator watching for deployments annotated with `mcp-server: "true"`, injecting the sidecar and creating a service for it.
 - **CRD** - `MCPConfig` allows selecting deployments by label and exposing only those annotated.
 - **Helm chart** - Installs the operator and CRD.
 
@@ -20,6 +20,7 @@ graph TD
     end
     Client --> Sidecar
     Operator[MCP Operator] -- watches --> Deployment["Deployment with mcp-server=true"]
+    Operator -- injects sidecar --> Deployment
     Operator -- creates --> Service
     Service --> Sidecar
 ```
@@ -44,7 +45,7 @@ helm install mcp-operator charts/mcp-operator
 
 ## Usage
 
-Add the sidecar container to a deployment and annotate the deployment:
+Annotate your deployment to enable MCP integration:
 
 ```yaml
 metadata:
@@ -52,7 +53,7 @@ metadata:
     mcp-server: "true"
 ```
 
-The operator will create a service `<deployment>-mcp` exposing port `8000`.
+When the operator sees this annotation it injects the MCP sidecar and creates a service `<deployment>-mcp` exposing port `8000`.
 
 ### Configuration
 
@@ -91,7 +92,8 @@ Version history lives in [CHANGELOG.md](CHANGELOG.md) and is maintained by
 ## Security
 
 Each build scans the sidecar image using Trivy. The generated report is
-available in [SECURITY.md](SECURITY.md).
+available in [SECURITY.md](SECURITY.md) and is committed back to the repository
+whenever a new release is published.
 
 ## Contributing
 

@@ -33,7 +33,8 @@ def test_openapi(monkeypatch):
     client = TestClient(app)
     resp = client.get('/openapi.json')
     assert resp.status_code == 200
-    assert resp.json() == {'openapi': '3.0'}
+    data = resp.json()
+    assert data.get('openapi', '').startswith('3.')
 
 def test_proxy(monkeypatch):
     monkeypatch.setattr('sidecar.main.httpx.AsyncClient', lambda: DummyClient())

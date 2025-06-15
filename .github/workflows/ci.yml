@@ -19,7 +19,7 @@ jobs:
       - name: Build sidecar image
         run: docker build -t mcp-sidecar:latest ./sidecar
       - name: Scan image
-        uses: aquasecurity/trivy-action@v0.20.0
+        uses: aquasecurity/trivy-action@v0
         with:
           image-ref: mcp-sidecar:latest
           format: table

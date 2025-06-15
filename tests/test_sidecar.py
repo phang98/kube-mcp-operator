@@ -22,8 +22,7 @@ class DummyResp:
         return self.content.decode()
 
 async def dummy(method, url, headers=None, content=None):
-    path = '/' + sidecar_main.OPENAPI_PATH.lstrip('/')
-    if url.endswith(path):
+    if url.endswith('/' + sidecar_main.OPENAPI_PATH.lstrip('/')):
         return DummyResp(b'{"openapi": "3.0"}')
     return DummyResp(b'"ok"')  # valid JSON string
 
@@ -49,7 +48,7 @@ def test_custom_openapi_path(monkeypatch):
     monkeypatch.setattr('sidecar.main.httpx.AsyncClient', lambda: DummyClient())
     monkeypatch.setattr(sidecar_main, 'OPENAPI_PATH', 'spec/swagger.json')
     client = TestClient(app)
-    resp = client.get('/openapi.json')
+    resp = client.get('/spec/swagger.json')  # match the new OPENAPI_PATH
     assert resp.status_code == 200
     data = resp.json()
     assert data.get('openapi', '').startswith('3.')

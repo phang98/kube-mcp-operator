@@ -9,6 +9,21 @@ This repository provides a minimal implementation of a Kubernetes operator and s
 - **CRD** - `MCPConfig` allows selecting deployments by label and exposing only those annotated.
 - **Helm chart** - Installs the operator and CRD.
 
+## Architecture
+
+```mermaid
+graph TD
+    subgraph Pod
+        App[Microservice]
+        Sidecar[MCP Sidecar]
+        App <--> Sidecar
+    end
+    Client --> Sidecar
+    Operator[MCP Operator] -- watches --> Deployment["Deployment with mcp-server=true"]
+    Operator -- creates --> Service
+    Service --> Sidecar
+```
+
 ## Building
 
 Sidecar image:

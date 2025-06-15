@@ -1,0 +1,5 @@
+apiVersion: v2
+name: mcp-operator
+version: 0.1.0
+description: Kubernetes MCP Operator
+appVersion: "0.1.0"

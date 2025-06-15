@@ -1,0 +1,2 @@
+operator:
+  image: mcp-operator:latest

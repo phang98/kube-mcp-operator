@@ -21,7 +21,7 @@ class DummyAppsV1Api:
 kubernetes.client.CoreV1Api = DummyCoreV1Api
 kubernetes.client.AppsV1Api = DummyAppsV1Api
 
-op = importlib.import_module('operator.mcp_operator')
+op = importlib.import_module('mcp_operator.mcp_operator')
 
 def test_deployment_created():
     meta = types.SimpleNamespace(annotations={'mcp-server': 'true'}, name='demo', namespace='default', labels={'app': 'demo'})

@@ -18,7 +18,7 @@ docker build -t mcp-sidecar ./sidecar
 
 Operator image:
 ```bash
-docker build -t mcp-operator ./operator
+docker build -t mcp-operator ./mcp_operator
 ```
 
 ## Installing with Helm
@@ -45,5 +45,5 @@ Run the unit tests with coverage:
 
 ```bash
 pip install -e .[dev]
-pytest --cov=sidecar --cov=operator --cov-report=term --cov-fail-under=80
+pytest --cov=sidecar --cov=mcp_operator --cov-report=term --cov-fail-under=80
 ```

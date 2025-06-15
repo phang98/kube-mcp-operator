@@ -87,3 +87,8 @@ changelog and attaches:
 
 Version history lives in [CHANGELOG.md](CHANGELOG.md) and is maintained by
 `python-semantic-release`.
+
+## Security
+
+Each build scans the sidecar image using Trivy. The generated report is
+available in [SECURITY.md](SECURITY.md).

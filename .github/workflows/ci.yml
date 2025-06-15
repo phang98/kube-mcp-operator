@@ -18,6 +18,12 @@ jobs:
       - run: pytest --cov=sidecar --cov=mcp_operator --cov-report=term --cov-fail-under=80
       - name: Build sidecar image
         run: docker build -t mcp-sidecar:latest ./sidecar
+      - name: Scan image
+        uses: aquasecurity/trivy-action@v0.20.0
+        with:
+          image-ref: mcp-sidecar:latest
+          format: table
+          output: SECURITY.md
       - name: Save image
         run: docker save mcp-sidecar:latest -o mcp-sidecar.tar
       - name: Install helm
@@ -30,6 +36,7 @@ jobs:
           path: |
             mcp-sidecar.tar
             mcp-operator-*.tgz
+            SECURITY.md
 
   release:
     needs: build-test
@@ -49,6 +56,6 @@ jobs:
         if: steps.semrel.outputs.released == 'true'
         run: |
           version=$(semantic-release print-version)
-          gh release upload "v${version}" mcp-sidecar.tar mcp-operator-*.tgz --repo "$GITHUB_REPOSITORY" --clobber
+          gh release upload "v${version}" mcp-sidecar.tar mcp-operator-*.tgz SECURITY.md --repo "$GITHUB_REPOSITORY" --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

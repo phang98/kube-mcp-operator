@@ -15,4 +15,4 @@ jobs:
           python-version: '3.11'
       - run: pip install -e .[dev]
       - run: python -m py_compile sidecar/main.py operator/mcp_operator.py
-      - run: pytest -q
+      - run: pytest --cov=sidecar --cov=operator --cov-report=term --cov-fail-under=80

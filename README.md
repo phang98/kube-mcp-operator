@@ -38,3 +38,12 @@ metadata:
 ```
 
 The operator will create a service `<deployment>-mcp` exposing port `8000`.
+
+## Testing
+
+Run the unit tests with coverage:
+
+```bash
+pip install -e .[dev]
+pytest --cov=sidecar --cov=operator --cov-report=term --cov-fail-under=80
+```

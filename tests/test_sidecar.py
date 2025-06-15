@@ -1,4 +1,5 @@
 import pytest
+import runpy
 pytest.importorskip('fastapi')
 pytest.importorskip('httpx')
 from fastapi.testclient import TestClient
@@ -40,3 +41,8 @@ def test_proxy(monkeypatch):
     resp = client.get('/foo')
     assert resp.status_code == 200
     assert resp.text == 'ok'
+
+def test_main_entry(monkeypatch):
+    monkeypatch.setattr('uvicorn.run', lambda app, host, port: (app, host, port))
+    result = runpy.run_module('sidecar.main', run_name='__main__')
+    assert result is not None

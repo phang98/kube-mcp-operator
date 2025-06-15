@@ -27,3 +27,21 @@ def test_deployment_created():
     meta = types.SimpleNamespace(annotations={'mcp-server': 'true'}, name='demo', namespace='default', labels={'app': 'demo'})
     op.deployment_created(body={}, spec={}, meta=meta)
     assert op.api.created == 'demo-mcp'
+
+def test_deployment_created_skip():
+    meta = types.SimpleNamespace(annotations={'mcp-server': 'false'}, name='demo', namespace='default', labels={'app': 'demo'})
+    op.api.created = None
+    op.deployment_created(body={}, spec={}, meta=meta)
+    assert op.api.created is None
+
+def test_mcpconfig_created():
+    deploy_meta = types.SimpleNamespace(annotations={'mcp-server': 'true'}, name='demo', namespace='default', labels={'app': 'demo'})
+    deployment = types.SimpleNamespace(
+        metadata=deploy_meta,
+        spec=types.SimpleNamespace(to_dict=lambda: {}),
+        to_dict=lambda: {}
+    )
+    op.apps.list_namespaced_deployment = lambda namespace, label_selector=None: types.SimpleNamespace(items=[deployment])
+    op.api.created = None
+    op.mcpconfig_created(body={}, spec={'selector': {'app': 'demo'}}, meta={'namespace': 'default'})
+    assert op.api.created == 'demo-mcp'

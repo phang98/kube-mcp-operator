@@ -92,7 +92,8 @@ Version history lives in [CHANGELOG.md](CHANGELOG.md) and is maintained by
 ## Security
 
 Each build scans the sidecar image using Trivy. The generated report is
-available in [SECURITY.md](SECURITY.md).
+available in [SECURITY.md](SECURITY.md) and is committed back to the repository
+whenever a new release is published.
 
 ## Contributing
 

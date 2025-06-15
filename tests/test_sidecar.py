@@ -48,7 +48,7 @@ def test_proxy(monkeypatch):
     client = TestClient(app)
     resp = client.get('/foo')
     assert resp.status_code == 200
-    assert resp.text == 'ok'
+    assert resp.json() == 'ok'
 
 def test_main_entry(monkeypatch):
     monkeypatch.setattr('uvicorn.run', lambda app, host, port: (app, host, port))

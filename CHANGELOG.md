@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v0.1.1 (2025-06-15)
+
+### Bug Fixes
+
+- Revert manual version bump
+  ([`e0bc65b`](https://github.com/phang98/kube-mcp-operator/commit/e0bc65b263f131bd79cb22b653323b1896816a4a))
+
+
 ## v0.1.0 (2025-06-15)
 
 ### Chores

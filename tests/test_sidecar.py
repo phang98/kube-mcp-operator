@@ -5,6 +5,7 @@ pytest.importorskip('fastapi')
 pytest.importorskip('httpx')
 from fastapi.testclient import TestClient
 
+import sidecar.main as sidecar_main
 from sidecar.main import app
 
 class DummyResp:
@@ -21,7 +22,8 @@ class DummyResp:
         return self.content.decode()
 
 async def dummy(method, url, headers=None, content=None):
-    if url.endswith("/openapi.json"):
+    path = '/' + sidecar_main.OPENAPI_PATH.lstrip('/')
+    if url.endswith(path):
         return DummyResp(b'{"openapi": "3.0"}')
     return DummyResp(b'"ok"')  # valid JSON string
 
@@ -37,6 +39,15 @@ class DummyClient:
 
 def test_openapi(monkeypatch):
     monkeypatch.setattr('sidecar.main.httpx.AsyncClient', lambda: DummyClient())
+    client = TestClient(app)
+    resp = client.get('/openapi.json')
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data.get('openapi', '').startswith('3.')
+
+def test_custom_openapi_path(monkeypatch):
+    monkeypatch.setattr('sidecar.main.httpx.AsyncClient', lambda: DummyClient())
+    monkeypatch.setattr(sidecar_main, 'OPENAPI_PATH', 'spec/swagger.json')
     client = TestClient(app)
     resp = client.get('/openapi.json')
     assert resp.status_code == 200

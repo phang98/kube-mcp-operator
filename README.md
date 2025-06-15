@@ -54,6 +54,18 @@ metadata:
 
 The operator will create a service `<deployment>-mcp` exposing port `8000`.
 
+### Configuration
+
+The sidecar locates the upstream service using environment variables:
+
+- `SERVICE_HOST` – hostname of the microservice (default `localhost`)
+- `SERVICE_PORT` – port of the microservice (default `80`)
+- `OPENAPI_PATH` – path to the OpenAPI or Swagger file including the file name
+  (default `openapi.json`)
+
+Requests to `/openapi.json` on the sidecar return the file from
+`http://$SERVICE_HOST:$SERVICE_PORT/$OPENAPI_PATH`.
+
 ## Testing
 
 Run the unit tests with coverage:

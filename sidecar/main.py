@@ -2,7 +2,9 @@ import os
 from fastapi import FastAPI, Request, Response
 import httpx
 
-app = FastAPI(title="MCP Sidecar", docs_url="/docs")
+# Disable the default OpenAPI route so we can proxy the underlying
+# service's specification instead of the sidecar's.
+app = FastAPI(title="MCP Sidecar", docs_url="/docs", openapi_url=None)
 
 SERVICE_HOST = os.environ.get("SERVICE_HOST", "localhost")
 SERVICE_PORT = os.environ.get("SERVICE_PORT", "80")

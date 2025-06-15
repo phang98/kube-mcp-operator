@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - run: pip install -e .[dev]
+      - run: python -m py_compile sidecar/main.py mcp_operator/mcp_operator.py
+      - run: pytest --cov=sidecar --cov=mcp_operator --cov-report=term --cov-fail-under=80
+      - name: Build sidecar image
+        run: docker build -t mcp-sidecar:latest ./sidecar
+      - name: Scan image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: mcp-sidecar:latest
+          format: table
+          output: SECURITY.md
+      - name: Save image
+        run: docker save mcp-sidecar:latest -o mcp-sidecar.tar
+      - name: Install helm
+        uses: azure/setup-helm@v4
+      - name: Package chart
+        run: helm package charts/mcp-operator
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            mcp-sidecar.tar
+            mcp-operator-*.tgz
+            SECURITY.md
+
+  release:
+    needs: build-test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+      - name: Semantic Release
+        id: semrel
+        uses: python-semantic-release/python-semantic-release@v8
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload artifacts
+        if: steps.semrel.outputs.released == 'true'
+        run: |
+          version=$(semantic-release print-version)
+          gh release upload "v${version}" mcp-sidecar.tar mcp-operator-*.tgz SECURITY.md --repo "$GITHUB_REPOSITORY" --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

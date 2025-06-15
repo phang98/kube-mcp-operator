@@ -1,0 +1,39 @@
+[project]
+name = "kube-mcp-operator"
+version = "0.1.0"
+description = "MCP operator and sidecar"
+authors = [
+    { name = "Phang", email = "phang98@gmail.com" }
+]
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "httpx",
+    "kopf",
+    "kubernetes",
+    "pyyaml"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "python-semantic-release"
+]
+
+[tool.pytest.ini_options]
+addopts = "--cov=sidecar --cov=mcp_operator --cov-report=term --cov-fail-under=80"
+
+[build-system]
+requires = ["setuptools>=42"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["mcp_operator*", "sidecar*"]
+exclude = ["charts*", "tests*"]
+
+[tool.semantic_release]
+version_variable = "pyproject.toml:project.version"
+changelog_file = "CHANGELOG.md"
+branch = "main"

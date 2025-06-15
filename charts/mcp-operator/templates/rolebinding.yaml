@@ -1,0 +1,11 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: mcp-operator
+subjects:
+  - kind: ServiceAccount
+    name: mcp-operator
+roleRef:
+  kind: Role
+  name: mcp-operator
+  apiGroup: rbac.authorization.k8s.io

@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-operator
+  template:
+    metadata:
+      labels:
+        app: mcp-operator
+    spec:
+      serviceAccountName: mcp-operator
+      containers:
+        - name: operator
+          image: {{ .Values.operator.image }}
+          imagePullPolicy: IfNotPresent
+          command: ["kopf", "run", "--standalone", "/app/mcp_operator.py"]

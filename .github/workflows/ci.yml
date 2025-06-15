@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - run: pip install -e .[dev]
+      - run: python -m py_compile sidecar/main.py operator/mcp_operator.py
+      - run: pytest --cov=sidecar --cov=operator --cov-report=term --cov-fail-under=80
+
+  release:
+    needs: build-test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v3
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v0.1.0
+          name: v0.1.0
+          body: |
+            Initial release providing:
+            - FastAPI sidecar exposing microservice APIs
+            - Kopf operator that registers MCP services
+            - Helm chart for deployment

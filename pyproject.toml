@@ -1,0 +1,25 @@
+[project]
+name = "kube-mcp-operator"
+version = "0.1.0"
+description = "MCP operator and sidecar"
+authors = [
+    { name = "Phang", email = "phang98@gmail.com" }
+]
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "httpx",
+    "kopf",
+    "kubernetes",
+    "pyyaml"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov"
+]
+
+[build-system]
+requires = ["setuptools>=42"]
+build-backend = "setuptools.build_meta"

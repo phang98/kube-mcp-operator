@@ -2,7 +2,7 @@
 name = "kube-mcp-operator"
 version = "0.1.0"
 description = "MCP operator and sidecar"
-authors = ["Phang <phang98@users.noreply.github.com>"]
+authors = ["Phang <phang98@gmail.com>"]
 dependencies = [
     "fastapi",
     "uvicorn",

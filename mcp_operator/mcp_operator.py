@@ -66,3 +66,21 @@ def mcpconfig_created(body, spec, meta, **kwargs):
         annotations = deploy.metadata.annotations or {}
         if annotations.get(MCP_LABEL) == 'true':
             deployment_created(body=deploy.to_dict(), spec=deploy.spec.to_dict(), meta=deploy.metadata, **kwargs)
+
+
+@kopf.on.startup()
+def inject_existing_deployments(**kwargs):
+    """Inject the sidecar into any annotated deployment already present."""
+    try:
+        deployments = apps.list_deployment_for_all_namespaces()
+    except AttributeError:  # pragma: no cover - fallback for older clients
+        return
+    for deploy in deployments.items:
+        annotations = getattr(deploy.metadata, "annotations", {}) or {}
+        if annotations.get(MCP_LABEL) == "true":
+            deployment_created(
+                body=deploy.to_dict(),
+                spec=deploy.spec.to_dict() if hasattr(deploy.spec, "to_dict") else {},
+                meta=deploy.metadata,
+                **kwargs,
+            )

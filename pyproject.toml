@@ -18,7 +18,8 @@ dependencies = [
 dev = [
     "pytest",
     "pytest-cov",
-    "python-semantic-release"
+    "python-semantic-release",
+    "pre-commit"
 ]
 
 [tool.pytest.ini_options]
@@ -40,3 +41,6 @@ version = {attr = "mcp_operator.__version__"}
 version_variable = "mcp_operator/__init__.py:__version__"
 changelog_file = "CHANGELOG.md"
 branch = "main"
+
+[tool.semantic_release.commit_parser_options]
+allowed_tags = ["feat", "fix", "chore", "docs", "refactor", "style", "test"]

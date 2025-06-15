@@ -21,10 +21,9 @@ class DummyResp:
         return self.content.decode()
 
 async def dummy(method, url, headers=None, content=None):
-    return DummyResp(b"ok")
-
-async def dummy_get(url):
-    return DummyResp(b'{"openapi": "3.0"}')
+    if url.endswith("/openapi.json"):
+        return DummyResp(b'{"openapi": "3.0"}')
+    return DummyResp(b'"ok"')  # valid JSON string
 
 class DummyClient:
     async def __aenter__(self):
@@ -34,7 +33,7 @@ class DummyClient:
     async def request(self, method, url, headers=None, content=None):
         return await dummy(method, url, headers, content)
     async def get(self, url):
-        return await dummy_get(url)
+        return await dummy("GET", url)
 
 def test_openapi(monkeypatch):
     monkeypatch.setattr('sidecar.main.httpx.AsyncClient', lambda: DummyClient())

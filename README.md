@@ -54,6 +54,7 @@ metadata:
 ```
 
 When the operator sees this annotation it injects the MCP sidecar and creates a service `<deployment>-mcp` exposing port `8000`.
+Existing annotated deployments are processed on startup so sidecars are injected even if the operator is installed later.
 
 ### Configuration
 

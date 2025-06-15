@@ -76,6 +76,9 @@ class DummyAppsV1Api:
     def list_namespaced_deployment(self, namespace, label_selector=None):
         return types.SimpleNamespace(items=[])
 
+    def list_deployment_for_all_namespaces(self):
+        return types.SimpleNamespace(items=[])
+
     def patch_namespaced_deployment(self, name, namespace, body):
         self.patched = (name, namespace, body)
 
@@ -128,3 +131,25 @@ def test_mcpconfig_created():
     op.mcpconfig_created(body={}, spec={'selector': {'app': 'demo'}}, meta={'namespace': 'default'})
     assert op.api.created == 'demo-mcp'
     assert op.apps.patched[0] == 'demo'
+
+
+def test_startup_injects_existing():
+    meta = types.SimpleNamespace(
+        annotations={'mcp-server': 'true'},
+        name='old',
+        namespace='default',
+        labels={'app': 'demo'}
+    )
+    deployment = types.SimpleNamespace(
+        metadata=meta,
+        spec=types.SimpleNamespace(to_dict=lambda: {
+            'template': {'spec': {'containers': [{'name': 'main'}]}}
+        }),
+        to_dict=lambda: {}
+    )
+    op.apps.list_deployment_for_all_namespaces = lambda: types.SimpleNamespace(items=[deployment])
+    op.api.created = None
+    op.apps.patched = None
+    op.inject_existing_deployments()
+    assert op.api.created == 'old-mcp'
+    assert op.apps.patched[0] == 'old'

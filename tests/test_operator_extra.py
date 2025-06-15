@@ -73,6 +73,9 @@ class DummyAppsV1Api:
     def list_namespaced_deployment(self, namespace, label_selector=None):
         return types.SimpleNamespace(items=[])
 
+    def list_deployment_for_all_namespaces(self):
+        return types.SimpleNamespace(items=[])
+
     def patch_namespaced_deployment(self, name, namespace, body):
         self.patched = (name, namespace, body)
 

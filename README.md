@@ -4,7 +4,7 @@ This repository provides a minimal implementation of a Kubernetes operator and s
 
 ## Components
 
-- **Sidecar** - Lightweight FastAPI application that proxies requests to the main container and exposes its OpenAPI specification.
+- **Sidecar** - Lightweight FastAPI application that proxies requests to the main container and exposes its OpenAPI specification from a configurable path.
 - **Operator** - A Kopf based operator watching for deployments annotated with `mcp-server: "true"` and creating a service for the sidecar.
 - **CRD** - `MCPConfig` allows selecting deployments by label and exposing only those annotated.
 - **Helm chart** - Installs the operator and CRD.

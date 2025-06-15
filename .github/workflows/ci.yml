@@ -21,9 +21,7 @@ jobs:
       - name: Save image
         run: docker save mcp-sidecar:latest -o mcp-sidecar.tar
       - name: Install helm
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y helm
+        uses: azure/setup-helm@v4
       - name: Package chart
         run: helm package charts/mcp-operator
       - uses: actions/upload-artifact@v4

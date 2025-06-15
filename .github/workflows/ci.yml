@@ -13,6 +13,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: '3.11'
+          cache: 'pip'
       - run: pip install -e .[dev]
       - run: python -m py_compile sidecar/main.py mcp_operator/mcp_operator.py
       - run: pytest --cov=sidecar --cov=mcp_operator --cov-report=term --cov-fail-under=80
@@ -49,7 +50,7 @@ jobs:
           name: build-artifacts
       - name: Semantic Release
         id: semrel
-        uses: python-semantic-release/python-semantic-release@v8
+        uses: python-semantic-release/python-semantic-release@v9
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload artifacts

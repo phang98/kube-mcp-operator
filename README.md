@@ -47,3 +47,12 @@ Run the unit tests with coverage:
 pip install -e .[dev]
 pytest --cov=sidecar --cov=mcp_operator --cov-report=term --cov-fail-under=80
 ```
+
+## CI Artifacts
+
+The GitHub Actions workflow builds the sidecar Docker image and packages the
+Helm chart on each push. When changes land on `main`, a release is created that
+attaches:
+
+- `mcp-sidecar.tar` – the Docker image saved as a tarball
+- `mcp-operator-<version>.tgz` – the packaged Helm chart

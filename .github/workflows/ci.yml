@@ -16,6 +16,22 @@ jobs:
       - run: pip install -e .[dev]
       - run: python -m py_compile sidecar/main.py mcp_operator/mcp_operator.py
       - run: pytest --cov=sidecar --cov=mcp_operator --cov-report=term --cov-fail-under=80
+      - name: Build sidecar image
+        run: docker build -t mcp-sidecar:latest ./sidecar
+      - name: Save image
+        run: docker save mcp-sidecar:latest -o mcp-sidecar.tar
+      - name: Install helm
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y helm
+      - name: Package chart
+        run: helm package charts/mcp-operator
+      - uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: |
+            mcp-sidecar.tar
+            mcp-operator-*.tgz
 
   release:
     needs: build-test
@@ -23,6 +39,9 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
@@ -33,3 +52,6 @@ jobs:
             - FastAPI sidecar exposing microservice APIs
             - Kopf operator that registers MCP services
             - Helm chart for deployment
+          files: |
+            mcp-sidecar.tar
+            mcp-operator-*.tgz

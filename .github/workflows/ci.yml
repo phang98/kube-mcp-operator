@@ -40,16 +40,65 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: build-artifacts
+      - name: Determine bump level
+        id: level
+        run: |
+          msg=$(git log -1 --pretty=%B)
+          if echo "$msg" | grep -q '#major'; then
+            echo "level=major" >> "$GITHUB_OUTPUT"
+          elif echo "$msg" | grep -q '#minor'; then
+            echo "level=minor" >> "$GITHUB_OUTPUT"
+          else
+            echo "level=patch" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Bump version
+        id: bump
+        run: |
+          ver=$(python scripts/bump_version.py ${{steps.level.outputs.level}})
+          echo "version=$ver" >> "$GITHUB_OUTPUT"
+      - name: Update changelog
+        run: python scripts/update_changelog.py ${{steps.bump.outputs.version}}
+      - name: Commit and tag
+        uses: EndBug/add-and-commit@v9
+        with:
+          add: "pyproject.toml CHANGELOG.md"
+          message: "chore(release): v${{steps.bump.outputs.version}}"
+          tag: "v${{steps.bump.outputs.version}}"
+          push: true
+          author_name: Phang
+          author_email: phang98@gmail.com
+      - name: Get release notes
+        id: notes
+        run: |
+          ver=${{steps.bump.outputs.version}}
+          python - <<'EOF' >_notes.txt
+import os, sys
+ver = os.environ['VER']
+text = []
+flag = False
+with open('CHANGELOG.md') as f:
+    for line in f:
+        if line.startswith(f"## {ver}"):
+            flag = True
+            continue
+        if flag and line.startswith('## '):
+            break
+        if flag:
+            text.append(line)
+print(''.join(text))
+EOF
+          notes=$(cat _notes.txt)
+          echo "notes<<EOF" >> $GITHUB_OUTPUT
+          echo "$notes" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        env:
+          VER: ${{steps.bump.outputs.version}}
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v0.1.0
-          name: v0.1.0
-          body: |
-            Initial release providing:
-            - FastAPI sidecar exposing microservice APIs
-            - Kopf operator that registers MCP services
-            - Helm chart for deployment
+          tag_name: v${{steps.bump.outputs.version}}
+          name: v${{steps.bump.outputs.version}}
+          body: ${{steps.notes.outputs.notes}}
           files: |
             mcp-sidecar.tar
             mcp-operator-*.tgz

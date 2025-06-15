@@ -83,3 +83,6 @@ attaches:
 
 - `mcp-sidecar.tar` – the Docker image saved as a tarball
 - `mcp-operator-<version>.tgz` – the packaged Helm chart
+
+Version changes are tracked in [CHANGELOG.md](CHANGELOG.md). New releases are
+automatically tagged using semantic versioning when changes merge to `main`.

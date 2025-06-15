@@ -1,10 +1,62 @@
-import pytest
-kopf = pytest.importorskip('kopf')
-kubernetes = pytest.importorskip('kubernetes')
+import sys
 import types
 import importlib
+import pytest
 
-kubernetes.config.load_incluster_config = lambda: None
+try:
+    import kopf
+except ImportError:  # pragma: no cover - fallback for offline testing
+    kopf = types.SimpleNamespace(
+        on=types.SimpleNamespace(
+            startup=lambda *a, **k: (lambda f: f),
+            create=lambda *a, **k: (lambda f: f),
+        ),
+        OperatorSettings=object,
+    )
+    sys.modules['kopf'] = kopf
+
+try:
+    import kubernetes
+except ImportError:  # pragma: no cover - fallback for offline testing
+    class _DummyExc(Exception):
+        def __init__(self, status=0):
+            self.status = status
+
+    class _V1ObjectMeta:
+        def __init__(self, name=None, labels=None):
+            self.name = name
+            self.labels = labels
+
+    class _V1ServiceSpec:
+        def __init__(self, selector=None, ports=None):
+            self.selector = selector
+            self.ports = ports
+
+    class _V1ServicePort:
+        def __init__(self, port=None, target_port=None):
+            self.port = port
+            self.target_port = target_port
+
+    class _V1Service:
+        def __init__(self, metadata=None, spec=None):
+            self.metadata = metadata
+            self.spec = spec
+
+    kubernetes = types.SimpleNamespace(
+        config=types.SimpleNamespace(load_incluster_config=lambda: None),
+        client=types.SimpleNamespace(
+            CoreV1Api=lambda: None,
+            AppsV1Api=lambda: None,
+            exceptions=types.SimpleNamespace(ApiException=_DummyExc),
+            V1Service=_V1Service,
+            V1ObjectMeta=_V1ObjectMeta,
+            V1ServiceSpec=_V1ServiceSpec,
+            V1ServicePort=_V1ServicePort,
+        ),
+    )
+    sys.modules['kubernetes'] = kubernetes
+else:
+    kubernetes.config.load_incluster_config = lambda: None
 
 class DummyCoreV1Api:
     def __init__(self):

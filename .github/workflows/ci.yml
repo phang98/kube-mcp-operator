@@ -71,7 +71,7 @@ jobs:
       - name: Upload artifacts
         if: steps.semrel.outputs.released == 'true'
         run: |
-          version=$(semantic-release print-version)
+          version="${{ steps.semrel.outputs.version }}"
           gh release upload "v${version}" mcp-sidecar.tar mcp-operator-*.tgz SECURITY.md --repo "$GITHUB_REPOSITORY" --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

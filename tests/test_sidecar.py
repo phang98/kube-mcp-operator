@@ -1,5 +1,6 @@
 import pytest
 import runpy
+import json
 pytest.importorskip('fastapi')
 pytest.importorskip('httpx')
 from fastapi.testclient import TestClient
@@ -10,7 +11,14 @@ class DummyResp:
     def __init__(self, content=b"{}", status_code=200, headers=None):
         self.content = content
         self.status_code = status_code
-        self.headers = headers or {}
+        self.headers = headers or {"content-type": "application/json"}
+
+    def json(self):
+        return json.loads(self.content.decode())
+
+    @property
+    def text(self):
+        return self.content.decode()
 
 async def dummy(method, url, headers=None, content=None):
     return DummyResp(b"ok")

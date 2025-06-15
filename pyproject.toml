@@ -1,6 +1,6 @@
 [project]
 name = "kube-mcp-operator"
-version = "0.1.0"
+dynamic = ["version"]
 description = "MCP operator and sidecar"
 authors = [
     { name = "Phang", email = "phang98@gmail.com" }
@@ -33,7 +33,10 @@ where = ["."]
 include = ["mcp_operator*", "sidecar*"]
 exclude = ["charts*", "tests*"]
 
+[tool.setuptools.dynamic]
+version = {attr = "mcp_operator.__version__"}
+
 [tool.semantic_release]
-version_variable = "pyproject.toml:project.version"
+version_variable = "mcp_operator/__init__.py:__version__"
 changelog_file = "CHANGELOG.md"
 branch = "main"

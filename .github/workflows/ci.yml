@@ -10,9 +10,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          fetch-tags: true
       - uses: actions/setup-python@v4
         with:
           python-version: '3.11'
+          cache: 'pip'
       - run: pip install -e .[dev]
       - run: python -m py_compile sidecar/main.py mcp_operator/mcp_operator.py
       - run: pytest --cov=sidecar --cov=mcp_operator --cov-report=term --cov-fail-under=80
@@ -44,12 +48,15 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          fetch-tags: true
       - uses: actions/download-artifact@v4
         with:
           name: build-artifacts
       - name: Semantic Release
         id: semrel
-        uses: python-semantic-release/python-semantic-release@v8
+        uses: python-semantic-release/python-semantic-release@v9
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload artifacts

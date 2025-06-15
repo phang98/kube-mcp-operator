@@ -20,6 +20,9 @@ dev = [
     "pytest-cov"
 ]
 
+[tool.pytest.ini_options]
+addopts = "--cov=sidecar --cov=mcp_operator --cov-report=term --cov-fail-under=80"
+
 [build-system]
 requires = ["setuptools>=42"]
 build-backend = "setuptools.build_meta"

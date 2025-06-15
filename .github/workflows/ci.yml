@@ -78,8 +78,14 @@ jobs:
       - name: Commit security report
         if: steps.semrel.outputs.released == 'true'
         run: |
+          git config --global --add safe.directory "$PWD"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          chmod -R u+w .git
           git add SECURITY.md
-          git commit -m "chore(security): update scan results" || echo "No changes to commit"
-          git push
+          if git diff --cached --quiet -- SECURITY.md; then
+            echo "No changes to SECURITY.md – skipping commit."
+          else
+            git commit -m "chore(security): update scan results" --no-verify
+            git push
+          fi
